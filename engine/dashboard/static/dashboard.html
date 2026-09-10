@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{BOT_NAME}} · 管理控制台</title>
+  <link rel="stylesheet" href="/dashboard/static/dashboard.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">跳到主要内容</a>
+  <div class="shell">
+    <aside class="sidebar" aria-label="控制台导航">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">N</span>
+        <span><strong>{{BOT_NAME}}</strong><small>管理控制台</small></span>
+      </div>
+      <nav id="navigation">
+        <button class="nav-item active" data-page="overview"><svg aria-hidden="true"><use href="#icon-grid"/></svg>概览</button>
+        <button class="nav-item" data-page="documents"><svg aria-hidden="true"><use href="#icon-file"/></svg>知识库</button>
+        <button class="nav-item" data-page="memories"><svg aria-hidden="true"><use href="#icon-memory"/></svg>对话与记忆</button>
+        <button class="nav-item" data-page="images"><svg aria-hidden="true"><use href="#icon-image"/></svg>图片库</button>
+        <button class="nav-item" data-page="automations"><svg aria-hidden="true"><use href="#icon-clock"/></svg>主动任务</button>
+      </nav>
+      <div class="sidebar-note"><span class="status-dot"></span>仅管理员可访问</div>
+    </aside>
+
+    <main id="content" tabindex="-1">
+      <header class="topbar">
+        <div><p class="eyebrow">Talkbot operations</p><h1 id="page-title">运行概览</h1></div>
+        <button id="refresh" class="icon-button" aria-label="刷新当前页面" title="刷新">
+          <svg aria-hidden="true"><use href="#icon-refresh"/></svg>
+        </button>
+      </header>
+
+      <div id="alert" role="status" aria-live="polite"></div>
+      <div id="loading" class="loading" hidden><span></span><span></span><span></span><span class="sr-only">正在加载</span></div>
+
+      <section id="page-overview" class="page active" aria-labelledby="page-title">
+        <div id="stats" class="stats" aria-label="系统指标"></div>
+        <div class="panel-grid">
+          <article class="panel">
+            <div class="panel-heading"><div><p class="eyebrow">Quick start</p><h2>常用入口</h2></div></div>
+            <div class="quick-actions">
+              <button data-jump="documents"><svg aria-hidden="true"><use href="#icon-upload"/></svg><span>上传资料<small>支持 PDF、DOCX、Markdown 与代码</small></span></button>
+              <button data-jump="memories"><svg aria-hidden="true"><use href="#icon-search"/></svg><span>检查记忆<small>按用户和关键词过滤</small></span></button>
+              <button data-jump="automations"><svg aria-hidden="true"><use href="#icon-clock"/></svg><span>安排推送<small>配置执行时间与免打扰</small></span></button>
+            </div>
+          </article>
+          <article class="panel health-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Service</p><h2>运行状态</h2></div><span class="badge success">就绪</span></div>
+            <dl id="health-details" class="details"></dl>
+          </article>
+        </div>
+      </section>
+
+      <section id="page-documents" class="page">
+        <div class="panel">
+          <div class="panel-heading"><div><p class="eyebrow">Knowledge base</p><h2>文档</h2><p>上传后立即建立结构化索引；文件修改也会被定时检测。</p></div>
+            <label class="button primary" for="document-file"><svg aria-hidden="true"><use href="#icon-upload"/></svg>选择文档</label>
+            <input id="document-file" type="file" multiple accept=".pdf,.txt,.md,.docx,.py,.js,.ts,.json,.yaml,.yml,.csv" hidden>
+          </div>
+          <div id="document-list" class="data-list"></div>
+        </div>
+      </section>
+
+      <section id="page-memories" class="page">
+        <div class="toolbar panel">
+          <label>用户<select id="memory-user"><option value="">全部授权用户</option></select></label>
+          <label>类型<select id="memory-kind"><option value="">全部</option><option value="chat">聊天记忆</option><option value="document">文档片段</option></select></label>
+          <label class="grow">搜索<input id="memory-query" type="search" placeholder="输入关键词"></label>
+          <button id="memory-search" class="button primary"><svg aria-hidden="true"><use href="#icon-search"/></svg>查询</button>
+        </div>
+        <div class="panel">
+          <div class="panel-heading"><div><p class="eyebrow">Memory inspector</p><h2>记忆片段</h2></div><span id="memory-count" class="badge"></span></div>
+          <div id="memory-list" class="data-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading"><div><p class="eyebrow">Conversation</p><h2>原始对话</h2><p>选择具体用户后显示最近消息。</p></div><button id="clear-history" class="button danger" disabled>清空该用户</button></div>
+          <div id="history-list" class="data-list"></div>
+        </div>
+      </section>
+
+      <section id="page-images" class="page">
+        <div class="panel">
+          <div class="panel-heading"><div><p class="eyebrow">Image library</p><h2>图片库</h2><p>可修改机器人调用图片时使用的名称。</p></div></div>
+          <div id="image-list" class="image-grid"></div>
+        </div>
+      </section>
+
+      <section id="page-automations" class="page">
+        <div class="panel settings-panel">
+          <div class="panel-heading"><div><p class="eyebrow">Quiet hours</p><h2>全局规则</h2></div></div>
+          <div class="form-grid">
+            <label>时区<input id="timezone" value="Asia/Shanghai"></label>
+            <label>免打扰开始<input id="quiet-start" type="time"></label>
+            <label>免打扰结束<input id="quiet-end" type="time"></label>
+          </div>
+        </div>
+        <div id="automation-list" class="automation-grid"></div>
+        <div class="sticky-actions"><button id="save-automations" class="button primary">保存主动任务设置</button></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="confirm-dialog">
+    <form method="dialog"><h2 id="confirm-title">确认操作</h2><p id="confirm-message"></p>
+      <div class="dialog-actions"><button value="cancel" class="button">取消</button><button id="confirm-action" value="confirm" class="button danger">确认</button></div>
+    </form>
+  </dialog>
+
+  <svg class="svg-defs" aria-hidden="true">
+    <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></symbol>
+    <symbol id="icon-memory" viewBox="0 0 24 24"><path d="M9 3a3 3 0 0 0-3 3v1a3 3 0 0 0-2 5 3 3 0 0 0 2 5v1a3 3 0 0 0 3 3c1.7 0 3-1.3 3-3V6c0-1.7-1.3-3-3-3zM15 3a3 3 0 0 1 3 3v1a3 3 0 0 1 2 5 3 3 0 0 1-2 5v1a3 3 0 0 1-3 3c-1.7 0-3-1.3-3-3V6c0-1.7 1.3-3 3-3z"/></symbol>
+    <symbol id="icon-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6.7 6.7L4 11m16 2-2.7 4.3A7 7 0 0 1 5.5 15"/></symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M5 20h14"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+  </svg>
+  <script src="/dashboard/static/dashboard.js" defer></script>
+</body>
+</html>

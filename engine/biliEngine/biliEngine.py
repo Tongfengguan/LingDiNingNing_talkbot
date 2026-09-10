@@ -11,6 +11,7 @@ async def get_bili_popular(limit=5):
     try:
         async with httpx.AsyncClient(headers=headers, timeout=15) as client:
             resp = await client.get(url)
+            resp.raise_for_status()
             data = resp.json()
             if data.get("code") == 0:
                 list_data = data["data"]["list"]
@@ -31,5 +32,5 @@ async def get_bili_popular(limit=5):
                 return popular_videos
             return []
     except Exception as e:
-        logger.error(f"抓取 B 站数据失败: {e}")
+        logger.warning("B站数据获取失败 ({})", type(e).__name__)
         return []

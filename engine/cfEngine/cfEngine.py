@@ -1,10 +1,13 @@
 import httpx
+import re
 from loguru import logger
 
 async def get_cf_info(handle):
+    if not re.fullmatch(r"[A-Za-z0-9_.-]{3,24}", handle):
+        return "Codeforces 用户名格式无效。"
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(f"https://codeforces.com/api/user.info?handles={handle}")
+            resp = await client.get("https://codeforces.com/api/user.info", params={"handles": handle})
             if resp.status_code != 200: return f"找不到 {handle}，你是笨蛋吗？"
             
             user = resp.json()["result"][0]

@@ -4,7 +4,8 @@ data/
 logs/
 __pycache__/
 engine/**/__pycache__/
-assets/docs/*.pdf
+assets/docs/*
+!assets/docs/Ayachi_Nene_Lore.txt
 assets/images/*
 !assets/images/.gitkeep
 QQ_BOT_完整文档.md

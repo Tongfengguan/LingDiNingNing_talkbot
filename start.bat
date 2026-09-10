@@ -8,6 +8,14 @@ if not exist "venv\Scripts\python.exe" (
     pause
     exit /b
 )
+:: Fail before opening the tunnel if security configuration is missing.
+.\venv\Scripts\python.exe -c "from config import config; config.validate()"
+if errorlevel 1 (
+    echo Please complete .env security settings according to README.md.
+    pause
+    exit /b 1
+)
+for /f %%P in ('.\venv\Scripts\python.exe -c "from config import config; print(config.BOT_PORT)"') do set "TALKBOT_PORT=%%P"
 :: Start Bot in a new window
 start "NingNing_Bot" cmd /c ".\venv\Scripts\activate && python main.py"
 
@@ -18,7 +26,7 @@ echo [2/2] Launching Cloudflare Tunnel...
 set "CF_PATH=D:\Software\Cloudflared\cloudflared.exe"
 
 if exist "%CF_PATH%" (
-    start "CF_Tunnel" cmd /c ""%CF_PATH%" tunnel --url http://127.0.0.1:8080"
+    start "CF_Tunnel" cmd /c ""%CF_PATH%" tunnel --url http://127.0.0.1:%TALKBOT_PORT%"
 ) else (
     echo Error: %CF_PATH% not found.
 )
