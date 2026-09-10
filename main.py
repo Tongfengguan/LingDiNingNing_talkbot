@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from loguru import logger
 
 from config import config
@@ -111,6 +111,18 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 app.include_router(qq_router)
 app.include_router(dashboard_router)
+
+
+@app.get("/", include_in_schema=False)
+async def root():
+    if config.DASHBOARD_TOKEN:
+        return RedirectResponse("/dashboard/", status_code=307)
+    return JSONResponse({"service": "Talkbot", "health": "/healthz"})
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
 
 
 @app.get("/healthz")

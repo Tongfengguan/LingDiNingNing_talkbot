@@ -579,6 +579,17 @@ class RegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(cancelled.is_set())
         self.assertIn("处理失败", response)
 
+    async def test_normal_conversation_always_receives_matching_knowledge(self):
+        source = "--- 来自 guide.md（操作规范）；相关度 0.88 ---\n后台入口是 /dashboard/。"
+        with patch.object(aim.pdf_engine, "search_docs", new=AsyncMock(return_value=source)) as search_docs, \
+             patch.object(self.bot, "_ai_call", new=AsyncMock(side_effect=["NO", "请打开后台入口。"] )) as model:
+            reply = await self.bot._conversation("10001", "Owner", "后台入口在哪里", None, [])
+        self.assertEqual(reply, "请打开后台入口。")
+        search_docs.assert_awaited_once_with("后台入口在哪里")
+        final_messages = model.await_args_list[-1].args[0]
+        self.assertTrue(any("guide.md" in item["content"] and "/dashboard/" in item["content"]
+                            for item in final_messages))
+
     async def test_smtp_uses_configured_port_and_verifies_tls(self):
         with patch.object(config, "SMTP_PORT", 2525), patch.object(email.smtplib, "SMTP") as smtp:
             server = smtp.return_value
@@ -617,6 +628,18 @@ class RegressionTests(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(main.app.state.ready)
             self.assertFalse(self.dispatcher.workers)
             self.assertEqual((await main.health()).status_code, 503)
+
+    async def test_root_redirects_to_dashboard_and_favicon_is_empty(self):
+        main = importlib.import_module("main")
+        root = await main.root()
+        self.assertEqual(root.status_code, 307)
+        self.assertEqual(root.headers["location"], "/dashboard/")
+        self.assertEqual((await main.favicon()).status_code, 204)
+
+        with patch.object(config, "DASHBOARD_TOKEN", ""):
+            public_root = await main.root()
+        self.assertEqual(public_root.status_code, 200)
+        self.assertNotIn(config.DEEPSEEK_API_KEY.encode(), public_root.body)
 
     async def test_startup_rejects_weak_secrets_and_empty_whitelist(self):
         config.validate()
